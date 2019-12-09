@@ -27,6 +27,7 @@ public:
 
 	virtual D3D12_SHADER_BYTECODE CreateVertexShader();
 	virtual D3D12_SHADER_BYTECODE CreatePixelShader();
+	virtual D3D12_SHADER_BYTECODE CreateGeometryShader();
 
 	D3D12_SHADER_BYTECODE CompileShaderFromFile(WCHAR *pszFileName, LPCSTR pszShaderName, LPCSTR pszShaderProfile, ID3DBlob **ppd3dShaderBlob);
 	D3D12_SHADER_BYTECODE ReadCompiledShaderFromFile(WCHAR *pszFileName, ID3DBlob **ppd3dShaderBlob=NULL);
@@ -59,6 +60,7 @@ public:
 protected:
 	ID3DBlob							*m_pd3dVertexShaderBlob = NULL;
 	ID3DBlob							*m_pd3dPixelShaderBlob = NULL;
+	ID3DBlob							*m_pd3dGeometryShaderBlob = NULL;
 
 	int									m_nPipelineStates = 0;
 	ID3D12PipelineState					**m_ppd3dPipelineStates = NULL;
@@ -133,7 +135,7 @@ public:
 struct VS_VB_BILLBOARD_INSTANCE
 {
 	XMFLOAT3						m_xmf3Position;
-	XMFLOAT4						m_xmf4BillboardInfo;
+	XMFLOAT2						m_xmf4BillboardInfo;
 };
 
 class CBillboardObjectsShader : public CShader
@@ -157,25 +159,16 @@ public:
 	virtual D3D12_INPUT_LAYOUT_DESC CreateInputLayout();
 	virtual D3D12_SHADER_BYTECODE CreateVertexShader();
 	virtual D3D12_SHADER_BYTECODE CreatePixelShader();
+	virtual D3D12_SHADER_BYTECODE CreateGeometryShader();
 
 private:
-	CGameObject						**m_ppObjects = 0;
-	int								m_nObjects = 0;
-
 	CMaterial*						m_pBillboardMaterial;
-
-	ID3D12Resource*					m_pd3dVertexBuffer = NULL;
-	ID3D12Resource*					m_pd3dVertexUploadBuffer = NULL;
-	D3D12_VERTEX_BUFFER_VIEW		m_d3dVertexBufferView;
 
 	int								m_nInstances = 0;
 	ID3D12Resource*					m_pd3dInstancesBuffer = NULL;
 	ID3D12Resource*					m_pd3dInstanceUploadBuffer = NULL;
 	D3D12_VERTEX_BUFFER_VIEW		m_d3dInstancingBufferView;
 
-
-	ID3D12Resource					*m_pd3dcbGameObjects = NULL;
-	CB_GAMEOBJECT_INFO				*m_pcbMappedGameObjects = NULL;
 
 
 #ifdef _WITH_BATCH_MATERIAL

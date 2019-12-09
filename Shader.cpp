@@ -40,6 +40,15 @@ D3D12_SHADER_BYTECODE CShader::CreatePixelShader()
 	return(d3dShaderByteCode);
 }
 
+D3D12_SHADER_BYTECODE CShader::CreateGeometryShader()
+{
+	D3D12_SHADER_BYTECODE d3dShaderByteCode;
+	d3dShaderByteCode.BytecodeLength = 0;
+	d3dShaderByteCode.pShaderBytecode = NULL;
+
+	return(d3dShaderByteCode);
+}
+
 D3D12_SHADER_BYTECODE CShader::CompileShaderFromFile(WCHAR *pszFileName, LPCSTR pszShaderName, LPCSTR pszShaderProfile, ID3DBlob **ppd3dShaderBlob)
 {
 	UINT nCompileFlags = 0;
@@ -187,6 +196,7 @@ void CShader::CreateShader(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *
 	m_d3dPipelineStateDesc.pRootSignature = pd3dGraphicsRootSignature;
 	m_d3dPipelineStateDesc.VS = CreateVertexShader();
 	m_d3dPipelineStateDesc.PS = CreatePixelShader();
+	m_d3dPipelineStateDesc.GS = CreateGeometryShader();
 	m_d3dPipelineStateDesc.RasterizerState = CreateRasterizerState();
 	m_d3dPipelineStateDesc.BlendState = CreateBlendState();
 	m_d3dPipelineStateDesc.DepthStencilState = CreateDepthStencilState();
@@ -569,33 +579,15 @@ D3D12_RASTERIZER_DESC CBillboardObjectsShader::CreateRasterizerState()
 
 void CBillboardObjectsShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, void* pContext)
 {
-
-	CTexturedVertex pVertices[6];
-	pVertices[0] = CTexturedVertex(XMFLOAT3(-4.0f, +4.0f, 1.0f), XMFLOAT2(0.0f, 0.0f));
-	pVertices[1] = CTexturedVertex(XMFLOAT3(+4.0f, +4.0f, 1.0f), XMFLOAT2(1.0f, 0.0f));
-	pVertices[2] = CTexturedVertex(XMFLOAT3(+4.0f, -4.0f, 1.0f), XMFLOAT2(1.0f, 1.0f));
-	pVertices[3] = CTexturedVertex(XMFLOAT3(-4.0f, +4.0f, 1.0f), XMFLOAT2(0.0f, 0.0f));
-	pVertices[4] = CTexturedVertex(XMFLOAT3(+4.0f, -4.0f, 1.0f), XMFLOAT2(1.0f, 1.0f));
-	pVertices[5] = CTexturedVertex(XMFLOAT3(-4.0f, -4.0f, 1.0f), XMFLOAT2(0.0f, 1.0f));
-
-
-	m_pd3dVertexBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, pVertices, sizeof(CTexturedVertex) * 6, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, &m_pd3dVertexUploadBuffer);
-
-	m_d3dVertexBufferView.BufferLocation = m_pd3dVertexBuffer->GetGPUVirtualAddress();
-	m_d3dVertexBufferView.StrideInBytes = sizeof(CTexturedVertex);
-	m_d3dVertexBufferView.SizeInBytes = sizeof(CTexturedVertex) * 6;
-
-
-	pVertices[5] = CTexturedVertex(XMFLOAT3(-4.0f, -4.0f, 1.0f), XMFLOAT2(0.0f, 1.0f));
 	CHeightMapTerrain* pTerrain = (CHeightMapTerrain*)pContext;
 
 	float fTerrainWidth = pTerrain->GetWidth();
 	float fTerrainLength = pTerrain->GetLength();
 
-	m_nObjects = m_nInstances = 100000;
+	m_nInstances = 100000;
 
 
-	VS_VB_BILLBOARD_INSTANCE* pInstanceInfos = new VS_VB_BILLBOARD_INSTANCE[m_nObjects];
+	VS_VB_BILLBOARD_INSTANCE* pInstanceInfos = new VS_VB_BILLBOARD_INSTANCE[m_nInstances];
 
 	CTexture* ppGrassTextures;
 	ppGrassTextures = new CTexture(1, RESOURCE_TEXTURE2D, 0);
@@ -617,7 +609,7 @@ void CBillboardObjectsShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12Graph
 
 	float fxWidth = 10.0f, fyHeight = 12.0f;
 
-	for (int i = 0;  i<m_nObjects ; i++)
+	for (int i = 0;  i<m_nInstances ; i++)
 	{
 		int nBillboardType = 1; //1:Grass, 2:Flower, 3:Tree
 		int nTextureType = 1; //1:Grass0, 2:Grass1, 3:Flower0, 4:Flower1, 5:Tree1, 6: Tree2, 7: Tree3
@@ -628,21 +620,20 @@ void CBillboardObjectsShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12Graph
 		float fHeight = pTerrain->GetHeight(xPosition, zPosition);
 
 		pInstanceInfos[i].m_xmf3Position = XMFLOAT3(xPosition, fHeight + 6, zPosition);
-		pInstanceInfos[i].m_xmf4BillboardInfo = XMFLOAT4(fxWidth, fyHeight, float(nBillboardType), float(nTextureType));
+		pInstanceInfos[i].m_xmf4BillboardInfo = XMFLOAT2(fxWidth, fyHeight);
 	}
 
-	m_pd3dInstancesBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, pInstanceInfos, sizeof(VS_VB_BILLBOARD_INSTANCE) * m_nObjects, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, &m_pd3dInstanceUploadBuffer);
+	m_pd3dInstancesBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, pInstanceInfos, sizeof(VS_VB_BILLBOARD_INSTANCE) * m_nInstances, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, &m_pd3dInstanceUploadBuffer);
 
 	m_d3dInstancingBufferView.BufferLocation = m_pd3dInstancesBuffer->GetGPUVirtualAddress();
 	m_d3dInstancingBufferView.StrideInBytes = sizeof(VS_VB_BILLBOARD_INSTANCE);
-	m_d3dInstancingBufferView.SizeInBytes = sizeof(VS_VB_BILLBOARD_INSTANCE) * m_nObjects;
+	m_d3dInstancingBufferView.SizeInBytes = sizeof(VS_VB_BILLBOARD_INSTANCE) * m_nInstances;
 
 //	if (pInstanceInfos) delete[] pInstanceInfos;
 }
 
 void CBillboardObjectsShader::ReleaseUploadBuffers()
 {
-	if (m_pd3dVertexUploadBuffer) m_pd3dVertexUploadBuffer->Release();
 	if (m_pd3dInstanceUploadBuffer) m_pd3dInstanceUploadBuffer->Release();
 
 }
@@ -656,6 +647,7 @@ void CBillboardObjectsShader::CreateShader(ID3D12Device* pd3dDevice, ID3D12Graph
 
 	if (m_pd3dVertexShaderBlob) m_pd3dVertexShaderBlob->Release();
 	if (m_pd3dPixelShaderBlob) m_pd3dPixelShaderBlob->Release();
+	if (m_pd3dGeometryShaderBlob) m_pd3dGeometryShaderBlob->Release();
 
 	if (m_d3dPipelineStateDesc.InputLayout.pInputElementDescs) delete[] m_d3dPipelineStateDesc.InputLayout.pInputElementDescs;
 
@@ -667,8 +659,6 @@ void CBillboardObjectsShader::CreateShaderVariables(ID3D12Device* pd3dDevice, ID
 
 void CBillboardObjectsShader::ReleaseObjects()
 {
-
-	if (m_pd3dVertexBuffer) m_pd3dVertexBuffer->Release();
 	if (m_pd3dInstancesBuffer) m_pd3dInstancesBuffer->Release();
 
 	m_pBillboardMaterial->Release();
@@ -680,10 +670,10 @@ void CBillboardObjectsShader::Render(ID3D12GraphicsCommandList* pd3dCommandList,
 
 	m_pBillboardMaterial->m_pTexture->UpdateShaderVariables(pd3dCommandList);
 
-	D3D12_VERTEX_BUFFER_VIEW pVertexBufferViews[] = { m_d3dVertexBufferView, m_d3dInstancingBufferView };
+	D3D12_VERTEX_BUFFER_VIEW pVertexBufferViews[] = { m_d3dInstancingBufferView };
 	pd3dCommandList->IASetVertexBuffers(0, _countof(pVertexBufferViews), pVertexBufferViews);
 	pd3dCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	pd3dCommandList->DrawInstanced(6, m_nInstances, 0, 0);
+	pd3dCommandList->DrawInstanced(0,m_nInstances, 0, 0);
 
 }
 
@@ -695,13 +685,11 @@ void CBillboardObjectsShader::AnimateObjects(float fTimeElapsed)
 
 D3D12_INPUT_LAYOUT_DESC CBillboardObjectsShader::CreateInputLayout()
 {
-	UINT nInputElementDescs = 4;
+	UINT nInputElementDescs = 2;
 	D3D12_INPUT_ELEMENT_DESC* pd3dInputElementDescs = new D3D12_INPUT_ELEMENT_DESC[nInputElementDescs];
 
-	pd3dInputElementDescs[0] = { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
-	pd3dInputElementDescs[1] = { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
-	pd3dInputElementDescs[2] = { "INSTANCEPOSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 1, 0, D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA, 1 };
-	pd3dInputElementDescs[3] = { "BILLBOARDINFO", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 12, D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA, 1 }; 
+	pd3dInputElementDescs[0] = { "BILLBOARDINFO", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA, 1 }; 
+	pd3dInputElementDescs[1] = { "INSTANCEPOSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA, 1 };
 	//1: instace data stat late : 인스턴스 데이터가 몇개 반복되는지
 
 	D3D12_INPUT_LAYOUT_DESC d3dInputLayoutDesc;
@@ -719,6 +707,12 @@ D3D12_SHADER_BYTECODE CBillboardObjectsShader::CreateVertexShader()
 D3D12_SHADER_BYTECODE CBillboardObjectsShader::CreatePixelShader()
 {
 	return(CShader::CompileShaderFromFile(L"Shaders.hlsl", "PSBillboardInstancing", "ps_5_1", &m_pd3dPixelShaderBlob));
+}
+
+D3D12_SHADER_BYTECODE CBillboardObjectsShader::CreateGeometryShader()
+{
+	return(CShader::CompileShaderFromFile(L"Shaders.hlsl", "GSBillboardInstancing", "gs_5_1", &m_pd3dGeometryShaderBlob));
+
 }
 
 
