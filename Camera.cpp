@@ -77,7 +77,6 @@ void CCamera::SetScissorRect(LONG xLeft, LONG yTop, LONG xRight, LONG yBottom)
 void CCamera::GenerateProjectionMatrix(float fNearPlaneDistance, float fFarPlaneDistance, float fAspectRatio, float fFOVAngle)
 {
 	m_xmf4x4Projection = Matrix4x4::PerspectiveFovLH(XMConvertToRadians(fFOVAngle), fAspectRatio, fNearPlaneDistance, fFarPlaneDistance);
-	m_xmf4x4OrthoProjection = Matrix4x4::OrthoLH(FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT,0, 1);
 
 }
 
@@ -126,12 +125,6 @@ void CCamera::UpdateShaderVariables(ID3D12GraphicsCommandList *pd3dCommandList)
 	XMFLOAT4X4 xmf4x4Projection;
 	XMStoreFloat4x4(&xmf4x4Projection, XMMatrixTranspose(XMLoadFloat4x4(&m_xmf4x4Projection)));
 	::memcpy(&m_pcbMappedCamera->m_xmf4x4Projection, &xmf4x4Projection, sizeof(XMFLOAT4X4));
-
-	XMFLOAT4X4 xmf4x4OrthoProjection;
-	XMStoreFloat4x4(&xmf4x4Projection, XMMatrixTranspose(XMLoadFloat4x4(&m_xmf4x4OrthoProjection)));
-	::memcpy(&m_pcbMappedCamera->m_xmf4x4OrthoProjection, &xmf4x4OrthoProjection, sizeof(XMFLOAT4X4));
-
-	::memcpy(&m_pcbMappedCamera->m_xmf3Position, &m_xmf3Position, sizeof(XMFLOAT3));
 
 	D3D12_GPU_VIRTUAL_ADDRESS d3dGpuVirtualAddress = m_pd3dcbCamera->GetGPUVirtualAddress();
 	pd3dCommandList->SetGraphicsRootConstantBufferView(0, d3dGpuVirtualAddress);

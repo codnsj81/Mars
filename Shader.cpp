@@ -584,7 +584,7 @@ void CBillboardObjectsShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12Graph
 	float fTerrainWidth = pTerrain->GetWidth();
 	float fTerrainLength = pTerrain->GetLength();
 
-	m_nInstances = 100000;
+	m_nInstances = 1'000;
 
 
 	VS_VB_BILLBOARD_INSTANCE* pInstanceInfos = new VS_VB_BILLBOARD_INSTANCE[m_nInstances];
@@ -629,7 +629,7 @@ void CBillboardObjectsShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12Graph
 	m_d3dInstancingBufferView.StrideInBytes = sizeof(VS_VB_BILLBOARD_INSTANCE);
 	m_d3dInstancingBufferView.SizeInBytes = sizeof(VS_VB_BILLBOARD_INSTANCE) * m_nInstances;
 
-//	if (pInstanceInfos) delete[] pInstanceInfos;
+	if (pInstanceInfos) delete[] pInstanceInfos;
 }
 
 void CBillboardObjectsShader::ReleaseUploadBuffers()
@@ -643,7 +643,25 @@ void CBillboardObjectsShader::CreateShader(ID3D12Device* pd3dDevice, ID3D12Graph
 	m_nPipelineStates = 1;
 	m_ppd3dPipelineStates = new ID3D12PipelineState * [m_nPipelineStates];
 
-	CShader::CreateShader(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature);
+	::ZeroMemory(&m_d3dPipelineStateDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
+	m_d3dPipelineStateDesc.pRootSignature = pd3dGraphicsRootSignature;
+	m_d3dPipelineStateDesc.VS = CreateVertexShader();
+	m_d3dPipelineStateDesc.PS = CreatePixelShader();
+	m_d3dPipelineStateDesc.GS = CreateGeometryShader();
+	m_d3dPipelineStateDesc.RasterizerState = CreateRasterizerState();
+	m_d3dPipelineStateDesc.BlendState = CreateBlendState();
+	m_d3dPipelineStateDesc.DepthStencilState = CreateDepthStencilState();
+	m_d3dPipelineStateDesc.InputLayout = CreateInputLayout();
+	m_d3dPipelineStateDesc.SampleMask = UINT_MAX;
+	m_d3dPipelineStateDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
+	m_d3dPipelineStateDesc.NumRenderTargets = 1;
+	m_d3dPipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+	m_d3dPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	m_d3dPipelineStateDesc.SampleDesc.Count = 1;
+	m_d3dPipelineStateDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
+
+	HRESULT hResult = pd3dDevice->CreateGraphicsPipelineState(&m_d3dPipelineStateDesc, __uuidof(ID3D12PipelineState), (void **)&m_ppd3dPipelineStates[0]);
+
 
 	if (m_pd3dVertexShaderBlob) m_pd3dVertexShaderBlob->Release();
 	if (m_pd3dPixelShaderBlob) m_pd3dPixelShaderBlob->Release();
@@ -672,8 +690,8 @@ void CBillboardObjectsShader::Render(ID3D12GraphicsCommandList* pd3dCommandList,
 
 	D3D12_VERTEX_BUFFER_VIEW pVertexBufferViews[] = { m_d3dInstancingBufferView };
 	pd3dCommandList->IASetVertexBuffers(0, _countof(pVertexBufferViews), pVertexBufferViews);
-	pd3dCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	pd3dCommandList->DrawInstanced(0,m_nInstances, 0, 0);
+	pd3dCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
+	pd3dCommandList->DrawInstanced(4,m_nInstances, 0, 0);
 
 }
 
@@ -688,8 +706,8 @@ D3D12_INPUT_LAYOUT_DESC CBillboardObjectsShader::CreateInputLayout()
 	UINT nInputElementDescs = 2;
 	D3D12_INPUT_ELEMENT_DESC* pd3dInputElementDescs = new D3D12_INPUT_ELEMENT_DESC[nInputElementDescs];
 
-	pd3dInputElementDescs[0] = { "BILLBOARDINFO", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA, 1 }; 
-	pd3dInputElementDescs[1] = { "INSTANCEPOSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA, 1 };
+	pd3dInputElementDescs[0] = { "INSTANCEPOSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA, 1 }; 
+	pd3dInputElementDescs[1] = { "BILLBOARDINFO", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA, 1 };
 	//1: instace data stat late : 인스턴스 데이터가 몇개 반복되는지
 
 	D3D12_INPUT_LAYOUT_DESC d3dInputLayoutDesc;
