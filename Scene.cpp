@@ -61,7 +61,7 @@ void CGameScene::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandLis
 	CMaterial::PrepareShaders(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature);
 	XMFLOAT3 xmf3Scale(4.0f, 6.0f, 4.0f);
 	XMFLOAT4 xmf4Color(0.6f, 0.5f, 0.2f, 0.0f);
-	m_pTerrain = new CHeightMapTerrain(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, _T("Image/terrain.raw"), 257, 257, 257, 257, xmf3Scale, xmf4Color);
+	m_pTerrain = new CHeightMapTerrain(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, _T("Image/terrain.raw"), 257, 257, 9, 9, xmf3Scale, xmf4Color);
 	xmf3Scale = XMFLOAT3(8.0f, 1.0f, 8.0f);
 	m_pWater = new CWater(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, 128, 128, 128, 128, xmf3Scale);
 	BuildDefaultLightsAndMaterials();
@@ -266,7 +266,7 @@ ID3D12RootSignature *CGameScene::CreateGraphicsRootSignature(ID3D12Device *pd3dD
 	d3dSamplerDesc[1].AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
 	d3dSamplerDesc[1].ShaderRegister = 1;
 
-	D3D12_ROOT_SIGNATURE_FLAGS d3dRootSignatureFlags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT | D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS | D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS;
+	D3D12_ROOT_SIGNATURE_FLAGS d3dRootSignatureFlags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT ;
 		//| D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
 	D3D12_ROOT_SIGNATURE_DESC d3dRootSignatureDesc;
 	::ZeroMemory(&d3dRootSignatureDesc, sizeof(D3D12_ROOT_SIGNATURE_DESC));

@@ -331,6 +331,7 @@ class CHeightMapTerrain : public CGameObject
 public:
 	CHeightMapTerrain(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, LPCTSTR pFileName, int nWidth, int nLength, int nBlockWidth, int nBlockLength, XMFLOAT3 xmf3Scale, XMFLOAT4 xmf4Color);
 	virtual ~CHeightMapTerrain();
+	void SetMesh(int nIndex, CMesh* pMesh);
 
 private:
 	CHeightMapImage* m_pHeightMapImage;
@@ -340,7 +341,12 @@ private:
 
 	XMFLOAT3						m_xmf3Scale;
 
+	CMesh** m_ppMeshes;
+	int								m_nMeshes;
+
+
 public:
+	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera = NULL);
 	float GetHeight(float x, float z, bool bReverseQuad = false) { return(m_pHeightMapImage->GetHeight(x, z, bReverseQuad) * m_xmf3Scale.y); } //World
 	XMFLOAT3 GetNormal(float x, float z) { return(m_pHeightMapImage->GetHeightMapNormal(int(x / m_xmf3Scale.x), int(z / m_xmf3Scale.z))); }
 

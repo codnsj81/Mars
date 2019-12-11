@@ -252,8 +252,8 @@ float CHeightMapImage::GetHeight(float fx, float fz, bool bReverseQuad)
 
 CHeightMapGridMesh::CHeightMapGridMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, int xStart, int zStart, int nWidth, int nLength, XMFLOAT3 xmf3Scale, XMFLOAT4 xmf4Color, void* pContext)
 {
-	m_nVertices = nWidth * nLength;
-	m_d3dPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
+	m_nVertices = 25;
+	m_d3dPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_25_CONTROL_POINT_PATCHLIST;
 
 	m_nWidth = nWidth;
 	m_nLength = nLength;
@@ -269,9 +269,9 @@ CHeightMapGridMesh::CHeightMapGridMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsC
 	int czHeightMap = pHeightMapImage->GetHeightMapLength();
 
 	float fHeight = 0.0f, fMinHeight = +FLT_MAX, fMaxHeight = -FLT_MAX;
-	for (int i = 0, z = zStart; z < (zStart + nLength); z++)
+	for (int i = 0, z = (zStart + nLength - 1); z >= zStart; z -= 2)
 	{
-		for (int x = xStart; x < (xStart + nWidth); x++, i++)
+		for (int x = xStart; x < (xStart + nWidth); x += 2, i++)
 		{
 			fHeight = OnGetHeight(x, z, pContext);
 			m_pxmf3Positions[i] = XMFLOAT3((x * m_xmf3Scale.x), fHeight, (z * m_xmf3Scale.z));
