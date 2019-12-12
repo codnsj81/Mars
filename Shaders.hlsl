@@ -24,6 +24,12 @@ cbuffer cbWaterWave : register(b5)
 	float					gfWaterWave : packoffset(c0);
 };
 
+cbuffer cbTessFactor : register(b6)
+{
+	float					gfTessFactor : packoffset(c0);
+	float					ffInsideFactor : packoffset(c4);
+};
+
 Texture2D gtxtTexture : register(t0);
 SamplerState gSamplerState : register(s0);
 SamplerState gClampSamplerState : register(s1);
@@ -216,12 +222,12 @@ HS_TERRAIN_TESSELLATION_CONSTANT VSTerrainTessellationConstant(InputPatch<VS_TER
 {
 	HS_TERRAIN_TESSELLATION_CONSTANT output;
 
-	output.fTessEdges[0] = 3.0f;
-	output.fTessEdges[1] = 3.0f;
-	output.fTessEdges[2] = 3.0f;
-	output.fTessEdges[3] = 3.0f;
-	output.fTessInsides[0] = 1.0f;
-	output.fTessInsides[1] = 1.0f;
+	output.fTessEdges[0] = 5.0f;
+	output.fTessEdges[1] = 5.0f;
+	output.fTessEdges[2] = 5.0f;
+	output.fTessEdges[3] = 5.0f;
+	output.fTessInsides[0] = 5.0f;
+	output.fTessInsides[1] = 5.0f;
 
 	return(output);
 }
@@ -252,8 +258,7 @@ float4 PSTerrain(DS_TERRAIN_TESSELLATION_OUTPUT input) : SV_TARGET
 	//float4 cBaseTexColor = float4(0.2f,0.2f,0.2f,1.f);
 	float4 cBaseTexColor = gtxtTerrainBaseTexture.Sample(gSamplerState, input.uv0);
 	float4 cDetailTexColor = gtxtTerrainDetailTexture.Sample(gSamplerState, input.uv1);
-	//float4 cColor = input.color * saturate(lerp(cBaseTexColor ,cDetailTexColor,0.5 ));
-	float4 cColor = cDetailTexColor;
+	float4 cColor = input.color * saturate((cBaseTexColor * 0.5f) + (cDetailTexColor * 0.5f));
 	return(cColor);
 }
 

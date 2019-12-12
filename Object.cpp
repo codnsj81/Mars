@@ -1015,7 +1015,9 @@ void CHeightMapTerrain::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCame
 {
 	OnPrepareRender();
 
+
 	m_ppMaterials[0]->m_pShader->Render(pd3dCommandList, pCamera);
+	m_ppMaterials[0]->UpdateShaderVariable(pd3dCommandList);
 	UpdateShaderVariable(pd3dCommandList,&m_xmf4x4World);
 
 	pd3dCommandList->SetGraphicsRootDescriptorTable(2, m_d3dCbvGPUDescriptorHandle);
