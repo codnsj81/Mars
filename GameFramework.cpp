@@ -41,6 +41,26 @@ CGameFramework::~CGameFramework()
 {
 }
 
+void CGameFramework::SetWindowModeText()
+{
+	m_GameTimer.GetFrameRate(m_pszFrameRate + 12, 37);
+	XMFLOAT3 xmf3Position = m_pPlayer->GetPosition();
+	wchar_t*	PipelineMode = _T(" FillMode :");
+	XMFLOAT2 mode = m_pTerrain->GetPipelineMode();
+	if (mode.y) {
+		wcscat_s(m_pszFrameRate, _T(" (FillMode : GRID, "));
+	}
+	else
+		wcscat_s(m_pszFrameRate, _T(" (FillMode : SOLID, "));
+
+	size_t nLength = _tcslen(m_pszFrameRate);
+
+	_stprintf_s(m_pszFrameRate + nLength, 70 - nLength, _T("TessFactor : %1.1f)"), mode.x);
+
+	//_stprintf_s(m_pszFrameRate + nLength, 70 - nLength, _T("(%4f, %4f, %4f)"), xmf3Position.x, xmf3Position.y, xmf3Position.z);
+	::SetWindowText(m_hWnd, m_pszFrameRate);
+}
+
 bool CGameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 {
 	m_hInstance = hInstance;
@@ -318,9 +338,13 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 					if (m_nSceneNum == 0) m_nSceneNum = 1;
 					break;
 				case VK_F1:
+					m_pTerrain->SetTessellationMode(m_pd3dCommandList);
+					break;
 				case VK_F2:
+					m_pTerrain->ChangePipeLine();
+					break;
 				case VK_F3:
-					m_pCamera = m_pPlayer->ChangeCamera((DWORD)(wParam - VK_F1 + 1), m_GameTimer.GetTimeElapsed());
+					dynamic_cast<CGameScene*>(m_pScene[1])->SetShowBillboards();
 					break;
 				case VK_F9:
 					ChangeSwapChainState();
@@ -406,6 +430,7 @@ void CGameFramework::BuildObjects()
 	m_pScene[1] = new CGameScene();
 	if (m_pScene[1]) m_pScene[1]->BuildObjects(m_pd3dDevice, m_pd3dCommandList);
 	m_pPlayer = dynamic_cast<CGameScene*>(m_pScene[1])->GetPlayer();
+	m_pTerrain = dynamic_cast<CGameScene*>(m_pScene[1])->GetTerrain();
 	m_pCamera = m_pPlayer->GetCamera();
 
 
@@ -615,11 +640,6 @@ void CGameFramework::FrameAdvance()
 #endif
 
 	MoveToNextFrame();
-
-	m_GameTimer.GetFrameRate(m_pszFrameRate + 12, 37);
-	size_t nLength = _tcslen(m_pszFrameRate);
-	XMFLOAT3 xmf3Position = m_pPlayer->GetPosition();
-	_stprintf_s(m_pszFrameRate + nLength, 70 - nLength, _T("(%4f, %4f, %4f)"), xmf3Position.x, xmf3Position.y, xmf3Position.z);
-	::SetWindowText(m_hWnd, m_pszFrameRate);
+	SetWindowModeText();
 }
 

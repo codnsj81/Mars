@@ -265,7 +265,8 @@ ID3D12RootSignature *CGameScene::CreateGraphicsRootSignature(ID3D12Device *pd3dD
 	d3dSamplerDesc[0].RegisterSpace = 0;
 	d3dSamplerDesc[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
-	d3dSamplerDesc[1] = d3dSamplerDesc[0];	
+	d3dSamplerDesc[1] = d3dSamplerDesc[0];
+	d3dSamplerDesc[1].Filter = D3D12_FILTER_MIN_MAG_LINEAR_MIP_POINT;
 	d3dSamplerDesc[1].AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
 	d3dSamplerDesc[1].AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
 	d3dSamplerDesc[1].AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
@@ -418,14 +419,20 @@ void CGameScene::Render(ID3D12GraphicsCommandList *pd3dCommandList, D3D12_CPU_DE
 			if (iter == iter_end) break;
 		}
 	}
-
-	m_pBillboardShader->Render(pd3dCommandList, pCamera);
+	
+	if(m_bShowBillboards)
+		m_pBillboardShader->Render(pd3dCommandList, pCamera);
 	
 	pd3dCommandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, NULL);
 
 	pd3dCommandList->OMSetStencilRef(1);
 	m_pWater->UpdateShaderVariables(pd3dCommandList);
 	m_pWater->Render(pd3dCommandList, pCamera);
+}
+
+void CGameScene::SetTessellationMode(ID3D12GraphicsCommandList* pd3dCommandList)
+{
+	m_pTerrain->SetTessellationMode(pd3dCommandList);
 }
 
 void CGameScene::CreateBullet()

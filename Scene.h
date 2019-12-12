@@ -112,16 +112,18 @@ public:
 	virtual void ReleaseShaderVariables();
 
 	virtual ID3D12RootSignature* CreateGraphicsRootSignature(ID3D12Device* pd3dDevice);
-
+	
+	void SetTessellationMode(ID3D12GraphicsCommandList* pd3dCommandList);
 	void CreateBullet();
 	CPlayer* GetPlayer() { return m_pPlayer; }
 	CHeightMapTerrain* GetTerrain() { return  m_pTerrain; }
 	void ReleaseUploadBuffers();
+	void SetShowBillboards() { m_bShowBillboards = (!m_bShowBillboards); }
 
 	CPlayer						*m_pPlayer = NULL;
 
 public:
-
+	bool						m_bShowBillboards = true;
 	CSkyBox*					m_pSkyBox = NULL;
 	CGameObject*				 m_pBulletModel = NULL;
 	CVillainObject					**m_ppVillains = NULL;

@@ -11,6 +11,7 @@ public:
 	CGameFramework();
 	~CGameFramework();
 
+	void SetWindowModeText();
 	bool OnCreate(HINSTANCE hInstance, HWND hMainWnd);
 	void OnDestroy();
 
@@ -87,6 +88,7 @@ private:
 	CScene						*m_pScene[2];
 	CPlayer						*m_pPlayer = NULL;
 	CCamera						*m_pCamera = NULL;
+	CHeightMapTerrain			*m_pTerrain = NULL;
 	int							m_nSceneNum = 0; // 0 : Lobby 1: gameScene
 	POINT						m_ptOldCursorPos;
 

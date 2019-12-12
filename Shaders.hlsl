@@ -26,8 +26,7 @@ cbuffer cbWaterWave : register(b5)
 
 cbuffer cbTessFactor : register(b6)
 {
-	float					gfTessFactor : packoffset(c0);
-	float					ffInsideFactor : packoffset(c4);
+	float2					gfTessFactor : packoffset(c0); //x : tessfactor , y : tessinsidefactor
 };
 
 Texture2D gtxtTexture : register(t0);
@@ -220,14 +219,23 @@ HS_TERRAIN_TESSELLATION_OUTPUT HSTerrainTessellation(InputPatch<VS_TERRAIN_OUTPU
 
 HS_TERRAIN_TESSELLATION_CONSTANT VSTerrainTessellationConstant(InputPatch<VS_TERRAIN_OUTPUT, 25> input)
 {
+
+	float3 vCenter;
+	for (int i = 0; i < 25; i++)
+		vCenter += input[i].position;
+	vCenter = vCenter / 25.f;
+
+	float fDistanceToCamera = distance(vCenter, gvCameraPosition);
+
+	float fTessFactor = (1.f/fDistanceToCamera)*100.f * gfTessFactor.x;
 	HS_TERRAIN_TESSELLATION_CONSTANT output;
 
-	output.fTessEdges[0] = 5.0f;
-	output.fTessEdges[1] = 5.0f;
-	output.fTessEdges[2] = 5.0f;
-	output.fTessEdges[3] = 5.0f;
-	output.fTessInsides[0] = 5.0f;
-	output.fTessInsides[1] = 5.0f;
+	output.fTessEdges[0] =fTessFactor;
+	output.fTessEdges[1] =fTessFactor;
+	output.fTessEdges[2] =fTessFactor;
+	output.fTessEdges[3] =fTessFactor;
+	output.fTessInsides[0] = fTessFactor;
+	output.fTessInsides[1] = fTessFactor;
 
 	return(output);
 }
