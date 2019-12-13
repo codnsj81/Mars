@@ -4,6 +4,8 @@
 
 #include "stdafx.h"
 #include "Shader.h"
+#include <iostream>
+#include <fstream>
 
 CShader::CShader()
 {
@@ -638,7 +640,7 @@ void CBillboardObjectsShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12Graph
 	float fTerrainWidth = pTerrain->GetWidth();
 	float fTerrainLength = pTerrain->GetLength();
 
-	m_nInstances = 1'00000;
+	m_nInstances = 200000;
 
 
 	VS_VB_BILLBOARD_INSTANCE* pInstanceInfos = new VS_VB_BILLBOARD_INSTANCE[m_nInstances];
@@ -655,27 +657,9 @@ void CBillboardObjectsShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12Graph
 	CreateCbvSrvDescriptorHeaps(pd3dDevice, pd3dCommandList, 0, 1);
 	CreateShaderResourceViews(pd3dDevice, pd3dCommandList, ppGrassTextures, 8, false);
 
-	float fxPitch = 0.25f;
-	float fzPitch = 0.25f;
-
-	float xPosition =0;
-	float zPosition =0;
-
-	float fxWidth = 10.0f, fyHeight = 12.0f;
-
-	for (int i = 0;  i<m_nInstances ; i++)
-	{
-		int nBillboardType = 1; //1:Grass, 2:Flower, 3:Tree
-		int nTextureType = 1; //1:Grass0, 2:Grass1, 3:Flower0, 4:Flower1, 5:Tree1, 6: Tree2, 7: Tree3
-
-		xPosition =  rand() % 1000;
-		zPosition =  rand() % 1000;
-	
-		float fHeight = pTerrain->GetHeight(xPosition, zPosition);
-
-		pInstanceInfos[i].m_xmf3Position = XMFLOAT3(xPosition, fHeight + 6, zPosition);
-		pInstanceInfos[i].m_xmf4BillboardInfo = XMFLOAT2(fxWidth, fyHeight);
-	}
+	ifstream input("billboadInfos.bin", ios::in | ios::binary);
+	input.read((char*)pInstanceInfos, sizeof(VS_VB_BILLBOARD_INSTANCE)* m_nInstances);
+	input.close();
 
 	m_pd3dInstancesBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, pInstanceInfos, sizeof(VS_VB_BILLBOARD_INSTANCE) * m_nInstances, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, &m_pd3dInstanceUploadBuffer);
 
@@ -745,7 +729,7 @@ void CBillboardObjectsShader::Render(ID3D12GraphicsCommandList* pd3dCommandList,
 	D3D12_VERTEX_BUFFER_VIEW pVertexBufferViews[] = { m_d3dInstancingBufferView };
 	pd3dCommandList->IASetVertexBuffers(0, _countof(pVertexBufferViews), pVertexBufferViews);
 	pd3dCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
-	pd3dCommandList->DrawInstanced(4,m_nInstances, 0, 0);
+	pd3dCommandList->DrawInstanced(1,m_nInstances, 0, 0);
 
 }
 

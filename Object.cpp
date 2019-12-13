@@ -1036,7 +1036,7 @@ void CHeightMapTerrain::UpdateShaderVariables(ID3D12GraphicsCommandList* pd3dCom
 
 void CHeightMapTerrain::SetTessellationMode(ID3D12GraphicsCommandList* pd3dCommandList)
 {
-	if ((*m_pxmf2TessFactor).x > 10)
+	if ((*m_pxmf2TessFactor).x > 20)
 	{
 		*m_pxmf2TessFactor = XMFLOAT2(2, 2);
 	}

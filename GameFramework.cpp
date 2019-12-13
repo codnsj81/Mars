@@ -4,6 +4,8 @@
 
 #include "stdafx.h"
 #include "GameFramework.h"
+#include <iostream>
+#include <fstream>
 
 CGameFramework::CGameFramework()
 {
@@ -346,6 +348,9 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 				case VK_F3:
 					dynamic_cast<CGameScene*>(m_pScene[1])->SetShowBillboards();
 					break;
+				case VK_F4:
+					SaveBillboardInfos();
+					break;
 				case VK_F9:
 					ChangeSwapChainState();
 					break;
@@ -571,6 +576,30 @@ void CGameFramework::MoveToNextFrame()
 	}
 }
 
+void CGameFramework::SaveBillboardInfos()
+{
+	ofstream output("billboadInfos.bin", ios::out | ios::binary);
+
+	VS_VB_BILLBOARD_INSTANCE pInstanceInfo;
+	float fxWidth = 10.0f, fyHeight = 12.0f;
+	float xPosition, zPosition;
+
+	for (int i = 0; i < 200000; i++)
+	{
+
+		xPosition = rand() % 1000;
+		zPosition = rand() % 1000;
+
+		float fHeight = m_pTerrain->GetHeight(xPosition, zPosition);
+
+		pInstanceInfo.m_xmf3Position = XMFLOAT3(xPosition, fHeight + 10, zPosition);
+		pInstanceInfo.m_xmf4BillboardInfo = XMFLOAT2(fxWidth, fyHeight);
+		output.write((char*)&pInstanceInfo, sizeof(VS_VB_BILLBOARD_INSTANCE));
+
+	}
+	output.close();
+
+}
 //#define _WITH_PLAYER_TOP
 
 void CGameFramework::FrameAdvance()
