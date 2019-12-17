@@ -241,6 +241,7 @@ HS_TERRAIN_TESSELLATION_CONSTANT VSTerrainTessellationConstant(InputPatch<VS_TER
 }
 
 [domain("quad")]
+[earlydepthstencil ]
 DS_TERRAIN_TESSELLATION_OUTPUT DSTerrainTessellation(HS_TERRAIN_TESSELLATION_CONSTANT patchConstant, float2 uv : SV_DomainLocation, OutputPatch<HS_TERRAIN_TESSELLATION_OUTPUT, 25> patch)
 {
 	DS_TERRAIN_TESSELLATION_OUTPUT output = (DS_TERRAIN_TESSELLATION_OUTPUT)0;
@@ -386,6 +387,7 @@ VS_BILLBOARD_INSTANCING_OUTPUT VSBillboardInstancing(VS_BILLBOARD_INSTANCING_INP
 	return(output);
 }
 
+[earlydepthstencil ]
 [maxvertexcount(4)]
 void GSBillboardInstancing(point VS_BILLBOARD_INSTANCING_OUTPUT input[1], uint primID : SV_PrimitiveID, inout TriangleStream <GS_OUT> outStream)
 {
@@ -418,8 +420,6 @@ void GSBillboardInstancing(point VS_BILLBOARD_INSTANCING_OUTPUT input[1], uint p
 float4 PSBillboardInstancing(GS_OUT input) : SV_TARGET
 {
 	float4 cColor = gtxtBillboardTexture.Sample(gClampSamplerState, input.uv);
-	//float4 cColor = float4(1,1,1,1);
-	clip(cColor.a - 0.3f);
 
 	return(cColor);
 }
@@ -430,7 +430,7 @@ float4 PSTextured(VS_TEXTURED_OUTPUT input) : SV_TARGET
 {
 	//float4 cColor = gtxtTexture.SampleLevel(gSamplerState, input.uv, 0);
 		float4 cColor = gtxtTexture.Sample(gSamplerState, input.uv);
-		clip(cColor.a - 0.3f);
+		//clip(cColor.a - 0.3f);
 
 		return(cColor);
 }
@@ -476,3 +476,36 @@ float4 PSSkyBox(VS_SKYBOX_OUTPUT input) : SV_TARGET
 
 	return(cColor);
 }
+
+
+Texture2D<float4> gtxtScene : register(t6);
+
+float4 VSPostProcessing(uint nVertexID : SV_VertexID) : SV_POSITION
+{
+	if (nVertexID == 0) return(float4(-1.0f, +1.0f, 0.0f, 1.0f));
+	if (nVertexID == 1) return(float4(+1.0f, +1.0f, 0.0f, 1.0f));
+	if (nVertexID == 2) return(float4(+1.0f, -1.0f, 0.0f, 1.0f));
+	if (nVertexID == 3) return(float4(-1.0f, +1.0f, 0.0f, 1.0f));
+	if (nVertexID == 4) return(float4(+1.0f, -1.0f, 0.0f, 1.0f));
+	if (nVertexID == 5) return(float4(-1.0f, -1.0f, 0.0f, 1.0f));
+
+	return(float4(0, 0, 0, 0));
+}
+
+float4 PSPostProcessing(float4 position : SV_POSITION) : SV_Target
+{
+	float4 cColor = gtxtScene[int2(position.xy)];
+	cColor = cColor * 2;
+
+	return(cColor);
+}
+
+float4 PSPostProcessingByMonochrome(float4 position : SV_POSITION) : SV_Target
+{
+	float4 cColor = gtxtScene[int2(position.xy)];
+	float fIntensity = cColor.r * 0.3f + cColor.g * 0.59f + cColor.b * 0.11f;
+	cColor = float4(fIntensity, fIntensity, fIntensity, 1.0f);
+
+	return(cColor);
+}
+

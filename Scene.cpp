@@ -124,7 +124,7 @@ void CGameScene::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandLis
 	m_pBulletModel->SetPosition(0,0,0);
 
 	m_pBillboardShader = new CBillboardObjectsShader();
-	m_pBillboardShader->CreateShader(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature);
+	m_pBillboardShader->CreateShader(pd3dDevice,m_pd3dGraphicsRootSignature);
 	m_pBillboardShader->BuildObjects(pd3dDevice, pd3dCommandList, m_pTerrain);
 
 	CreateShaderVariables(pd3dDevice, pd3dCommandList);

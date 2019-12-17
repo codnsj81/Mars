@@ -20,6 +20,7 @@ public:
 	void CreateCommandQueueAndList();
 
 	void CreateRtvAndDsvDescriptorHeaps();
+	void CreateSwapChainRenderTargetViews();
 
 	void CreateRenderTargetViews();
 	void CreateDepthStencilView();
@@ -43,6 +44,8 @@ public:
 
 private:
 
+	ID3D12Resource* m_pd3dRenderResourceBuffer = NULL;
+	CPostProcessingByTestShader* m_pPostProcessingByTestShader = NULL;
 	CUI*						m_pTitle = NULL;
 	float						m_fShootSpeed = 0.2f;
 	float						m_fShootTime;
@@ -71,6 +74,8 @@ private:
 	ID3D12Resource				*m_pd3dDepthStencilBuffer = NULL;
 	ID3D12DescriptorHeap		*m_pd3dDsvDescriptorHeap = NULL;
 	UINT						m_nDsvDescriptorIncrementSize;
+
+	D3D12_CPU_DESCRIPTOR_HANDLE		m_pd3dRtvSwapChainBackBufferCPUHandles[m_nSwapChainBuffers];
 
 	ID3D12CommandAllocator		*m_pd3dCommandAllocator = NULL;
 	ID3D12CommandQueue			*m_pd3dCommandQueue = NULL;
