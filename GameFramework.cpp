@@ -69,10 +69,11 @@ bool CGameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 	CreateDirect3DDevice();
 	CreateCommandQueueAndList();
 	CreateRtvAndDsvDescriptorHeaps();
-	CreateSwapChain();
 	CreateDepthStencilView();
 
 	BuildObjects();
+
+	CreateSwapChain();
 
 	return(true);
 }
@@ -247,6 +248,7 @@ void CGameFramework::CreateSwapChainRenderTargetViews()
 	m_pPostProcessingByTestShader = new CPostProcessingByTestShader();
 	m_pPostProcessingByTestShader->CreateGraphicsRootSignature(m_pd3dDevice);
 	m_pPostProcessingByTestShader->CreateShader(m_pd3dDevice, m_pPostProcessingByTestShader->GetGraphicsRootSignature());
+	m_pPostProcessingByTestShader->CreateShaderVariables(m_pd3dDevice, m_pd3dCommandList);
 	m_pPostProcessingByTestShader->BuildObjects(m_pd3dDevice, m_pd3dCommandList, pTexture);
 
 }
@@ -694,6 +696,7 @@ void CGameFramework::FrameAdvance()
 	m_pd3dCommandList->ClearDepthStencilView(d3dDsvCPUDescriptorHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, NULL);
 	m_pd3dCommandList->OMSetRenderTargets(1, &m_pd3dRtvSwapChainBackBufferCPUHandles[m_nSwapChainBufferIndex], TRUE, &d3dDsvCPUDescriptorHandle);
 
+	m_pPostProcessingByTestShader->SetBlurFactor(m_pPlayer->GetPlayerSpeed());
 	m_pPostProcessingByTestShader->Render(m_pd3dCommandList, m_pCamera);
 
 	::SynchronizeResourceTransition(m_pd3dCommandList, m_ppd3dSwapChainBackBuffers[m_nSwapChainBufferIndex], D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);

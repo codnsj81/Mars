@@ -81,6 +81,7 @@ public:
 	virtual bool ProcessInput(UCHAR* pKeysBuffer) { return false; }
 	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList, D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle, CCamera* pCamera = NULL);
 	virtual void ReleaseUploadBuffers() {}
+
 private:
 	CUI* m_pTitle = NULL;
 

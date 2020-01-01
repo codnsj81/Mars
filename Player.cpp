@@ -176,6 +176,11 @@ void CPlayer::Update(float fTimeElapsed)
 	m_xmf3Velocity = Vector3::Add(m_xmf3Velocity, Vector3::ScalarProduct(m_xmf3Velocity, -fDeceleration, true));
 }
 
+float CPlayer::GetPlayerSpeed()
+{
+	return Vector3::Length(m_xmf3Velocity);
+}
+
 CCamera *CPlayer::OnChangeCamera(DWORD nNewCameraMode, DWORD nCurrentCameraMode)
 {
 	CCamera *pNewCamera = NULL;

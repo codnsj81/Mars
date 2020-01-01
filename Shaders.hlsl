@@ -29,6 +29,13 @@ cbuffer cbTessFactor : register(b6)
 	float2					gfTessFactor : packoffset(c0); //x : tessfactor , y : tessinsidefactor
 };
 
+
+cbuffer cbBlurFactor : register(b7)
+{
+	int					giBlurFactor : packoffset(c0); 
+};
+
+
 Texture2D gtxtTexture : register(t0);
 SamplerState gSamplerState : register(s0);
 SamplerState gClampSamplerState : register(s1);
@@ -494,10 +501,14 @@ float4 VSPostProcessing(uint nVertexID : SV_VertexID) : SV_POSITION
 
 float4 PSPostProcessing(float4 position : SV_POSITION) : SV_Target
 {
-	float4 cColor = gtxtScene[int2(position.xy)];
-	cColor = cColor * 2;
-
-	return(cColor);
+	float4 cColor = float4(0,0,0,0);
+	int nWidth, nHeight, nMipLevels;
+	gtxtScene.GetDimensions(0, nWidth, nHeight, nMipLevels);
+	int2 loc2 = int2(position.x, position.y );
+	cColor = gtxtScene[loc2];
+	cColor += (gtxtScene[int2(loc2.x + giBlurFactor, loc2.y)] + gtxtScene[int2(loc2.x - giBlurFactor, loc2.y)]);
+	cColor += (gtxtScene[int2(loc2.x, loc2.y+ giBlurFactor)] + gtxtScene[int2(loc2.x, loc2.y - giBlurFactor)]);
+	return (cColor*0.2f);
 }
 
 float4 PSPostProcessingByMonochrome(float4 position : SV_POSITION) : SV_Target

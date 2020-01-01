@@ -67,7 +67,7 @@ public:
 	void Rotate(DWORD dwRotation, float fDistance);
 
 	void Update(float fTimeElapsed);
-
+	float GetPlayerSpeed();
 	virtual void OnPlayerUpdateCallback(float fTimeElapsed) { }
 	void SetPlayerUpdatedContext(LPVOID pContext) { m_pPlayerUpdatedContext = pContext; }
 

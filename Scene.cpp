@@ -250,6 +250,7 @@ ID3D12RootSignature *CGameScene::CreateGraphicsRootSignature(ID3D12Device *pd3dD
 	pd3dRootParameters[9].Descriptor.RegisterSpace = 0;
 	pd3dRootParameters[9].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
+
 	D3D12_STATIC_SAMPLER_DESC d3dSamplerDesc[2];
 	::ZeroMemory(&d3dSamplerDesc[0], sizeof(D3D12_STATIC_SAMPLER_DESC));
 	d3dSamplerDesc[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
@@ -476,7 +477,7 @@ void CLobbyScene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
 	m_pd3dGraphicsRootSignature = CreateGraphicsRootSignature(pd3dDevice);
 
 	m_pTitle = new CUI(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, 0, 0, 2, 2);
-
+	CreateShaderVariables(pd3dDevice, pd3dCommandList);
 }
 
 ID3D12RootSignature* CLobbyScene::CreateGraphicsRootSignature(ID3D12Device* pd3dDevice)
@@ -498,6 +499,8 @@ ID3D12RootSignature* CLobbyScene::CreateGraphicsRootSignature(ID3D12Device* pd3d
 	pd3dRootParameters[0].DescriptorTable.NumDescriptorRanges = 1;
 	pd3dRootParameters[0].DescriptorTable.pDescriptorRanges = &pd3dDescriptorRanges[0];
 	pd3dRootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+
 
 	D3D12_STATIC_SAMPLER_DESC d3dSamplerDesc;
 	::ZeroMemory(&d3dSamplerDesc, sizeof(D3D12_STATIC_SAMPLER_DESC));
